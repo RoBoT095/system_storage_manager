@@ -1,0 +1,33 @@
+import 'platform_interface.dart';
+
+class SafAndroidHandler implements FileHandler {
+  @override
+  Future<List<FileItem>> listFiles(String uri) async {
+    return [];
+  }
+
+  @override
+  Future<FileItem> createFile(String uri, String name) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<FileItem> rename(String uri, String newName) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<FileItem> copy(String fromUri, String toUri) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<FileItem> move(String fromUri, String toUri) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<bool> delete(String uri) async {
+    throw UnimplementedError();
+  }
+}
