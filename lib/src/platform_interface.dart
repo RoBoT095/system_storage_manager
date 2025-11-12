@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'default_file_handler.dart';
 import 'saf_android_handler.dart';
 
@@ -7,7 +9,7 @@ abstract class FileHandler {
     return DefaultFileHandler();
   }
 
-  static bool get _isAndroid => const bool.fromEnvironment('dart.library.io');
+  static bool get _isAndroid => Platform.isAndroid;
 
   Future<List<FileItem>> listFiles(String uri);
   Future<FileItem> createFile(String uri, String name);
