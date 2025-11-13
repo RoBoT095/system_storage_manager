@@ -1,6 +1,23 @@
 import 'platform_interface.dart';
 
 class SafAndroidHandler implements FileHandler {
+  // TODO everything
+
+  @override
+  Future<FileItem?> pickFile() async {
+    return null;
+  }
+
+  @override
+  Future<List<FileItem>?> pickFiles() async {
+    return null;
+  }
+
+  @override
+  Future<FileItem?> pickDir() async {
+    return null;
+  }
+
   @override
   Future<List<FileItem>> listFiles(String uri) async {
     return [];
@@ -28,6 +45,11 @@ class SafAndroidHandler implements FileHandler {
 
   @override
   Future<bool> delete(String uri) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<bool> exists(String uri) async {
     throw UnimplementedError();
   }
 }

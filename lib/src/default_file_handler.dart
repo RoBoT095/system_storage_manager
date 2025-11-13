@@ -3,6 +3,24 @@ import 'platform_interface.dart';
 
 class DefaultFileHandler implements FileHandler {
   @override
+  Future<FileItem?> pickFile() async {
+    // TODO
+    return null;
+  }
+
+  @override
+  Future<List<FileItem>?> pickFiles() async {
+    // TODO
+    return null;
+  }
+
+  @override
+  Future<FileItem?> pickDir() async {
+    // TODO
+    return null;
+  }
+
+  @override
   Future<List<FileItem>> listFiles(String uri) async {
     final dir = Directory(uri);
     final entities = await dir.list().toList();
@@ -10,7 +28,7 @@ class DefaultFileHandler implements FileHandler {
       return FileItem(
         uri: e.uri.toString(),
         name: e.uri.pathSegments.last,
-        isDirectory: e is Directory,
+        isDir: e is Directory,
       );
     }).toList();
   }
@@ -49,5 +67,11 @@ class DefaultFileHandler implements FileHandler {
     final file = File(uri);
     await file.delete();
     return true;
+  }
+
+  @override
+  Future<bool> exists(String uri) async {
+    final file = File(uri);
+    return await file.exists();
   }
 }

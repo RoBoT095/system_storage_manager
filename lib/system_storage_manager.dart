@@ -3,8 +3,6 @@ library;
 
 export 'src/platform_interface.dart' show FileHandler, FileItem;
 import 'src/platform_interface.dart';
-import 'src/saf_android_handler.dart'
-    if (dart.library.io) 'src/default_file_handler.dart';
 
 class SystemStorageManager {
   static final SystemStorageManager _instance =

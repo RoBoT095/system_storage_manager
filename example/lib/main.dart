@@ -96,7 +96,7 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
                 final file = files[index];
                 return ListTile(
                   leading: Icon(
-                    file.isDirectory ? Icons.folder : Icons.insert_drive_file,
+                    file.isDir ? Icons.folder : Icons.insert_drive_file,
                   ),
                   title: Text(file.name),
                   subtitle: Text(file.uri),
