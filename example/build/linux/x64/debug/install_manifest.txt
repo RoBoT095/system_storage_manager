@@ -1,0 +1,12 @@
+/home/robert/Programming/GitHub/system_storage_manager/example/build/linux/x64/debug/bundle/system_storage_manager
+/home/robert/Programming/GitHub/system_storage_manager/example/build/linux/x64/debug/bundle/data/icudtl.dat
+/home/robert/Programming/GitHub/system_storage_manager/example/build/linux/x64/debug/bundle/lib/libflutter_linux_gtk.so
+/home/robert/Programming/GitHub/system_storage_manager/example/build/linux/x64/debug/bundle/data/flutter_assets/shaders/ink_sparkle.frag
+/home/robert/Programming/GitHub/system_storage_manager/example/build/linux/x64/debug/bundle/data/flutter_assets/kernel_blob.bin
+/home/robert/Programming/GitHub/system_storage_manager/example/build/linux/x64/debug/bundle/data/flutter_assets/version.json
+/home/robert/Programming/GitHub/system_storage_manager/example/build/linux/x64/debug/bundle/data/flutter_assets/FontManifest.json
+/home/robert/Programming/GitHub/system_storage_manager/example/build/linux/x64/debug/bundle/data/flutter_assets/NOTICES.Z
+/home/robert/Programming/GitHub/system_storage_manager/example/build/linux/x64/debug/bundle/data/flutter_assets/AssetManifest.bin
+/home/robert/Programming/GitHub/system_storage_manager/example/build/linux/x64/debug/bundle/data/flutter_assets/fonts/MaterialIcons-Regular.otf
+/home/robert/Programming/GitHub/system_storage_manager/example/build/linux/x64/debug/bundle/data/flutter_assets/AssetManifest.json
+/home/robert/Programming/GitHub/system_storage_manager/example/build/linux/x64/debug/bundle/data/flutter_assets/NativeAssetsManifest.json

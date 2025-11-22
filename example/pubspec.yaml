@@ -10,6 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  path: ^1.9.1
   system_storage_manager: 
     path: ../
 

@@ -19,7 +19,10 @@ class SafAndroidHandler implements FileHandler {
   }
 
   @override
-  Future<List<FileItem>> listFiles(String uri) async {
+  Future<List<FileItem>> listFiles(
+    String uri, {
+    bool showHidden = false,
+  }) async {
     return [];
   }
 

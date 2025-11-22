@@ -14,7 +14,7 @@ abstract class FileHandler {
   Future<FileItem?> pickFile();
   Future<List<FileItem>?> pickFiles();
   Future<FileItem?> pickDir();
-  Future<List<FileItem>> listFiles(String uri);
+  Future<List<FileItem>> listFiles(String uri, {bool showHidden = false});
   Future<FileItem> createFile(String uri, String name);
   Future<FileItem> rename(String uri, String newName);
   Future<FileItem> copy(String fromUri, String toUri);

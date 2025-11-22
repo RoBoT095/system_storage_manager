@@ -13,14 +13,32 @@ class SystemStorageManager {
 
   final FileHandler _handler = FileHandler.create();
 
-  Future<List<FileItem>> listFiles(String uri) => _handler.listFiles(uri);
+  /// Opens file picker to select a single file
+  Future<FileItem?> pickFile() => _handler.pickFile();
+
+  ///
+  Future<FileItem?> pickDir() => _handler.pickDir();
+
+  ///
+  Future<List<FileItem>> listFiles(String uri, {bool showHidden = false}) =>
+      _handler.listFiles(uri, showHidden: showHidden);
+
+  ///
   Future<FileItem> createFile(String uri, String name) =>
       _handler.createFile(uri, name);
+
+  ///
   Future<bool> delete(String uri) => _handler.delete(uri);
+
+  ///
   Future<FileItem> rename(String uri, String newName) =>
       _handler.rename(uri, newName);
+
+  ///
   Future<FileItem> copy(String fromUri, String toUri) =>
       _handler.copy(fromUri, toUri);
+
+  ///
   Future<FileItem> move(String fromUri, String toUri) =>
       _handler.move(fromUri, toUri);
 }
