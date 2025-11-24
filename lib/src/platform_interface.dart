@@ -11,7 +11,11 @@ abstract class FileHandler {
 
   static bool get _isAndroid => Platform.isAndroid;
 
-  Future<FileItem?> pickDir({String? initUri});
+  Future<FileItem?> pickDir({
+    String? initUri,
+    bool? writePermission,
+    bool? persistablePermission,
+  });
   Future<FileItem?> pickFile({List<String>? allowedExtensions});
   Future<List<FileItem>?> pickFiles({List<String>? allowedExtensions});
   Future<List<FileItem>> listFiles(String uri, {bool showHidden = false});
@@ -22,6 +26,7 @@ abstract class FileHandler {
 
   Future<bool> exists(String uri);
   // Future<FileItemStats> stats(String uri);
+  Future<String> parentUri(String uri);
 
   Future<FileItem> copy(String fromUri, String toUri);
   Future<FileItem> move(String fromUri, String toUri);

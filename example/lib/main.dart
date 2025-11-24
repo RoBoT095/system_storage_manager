@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import 'package:system_storage_manager/system_storage_manager.dart';
+import 'package:system_storage_manager_demo/views/desktop_grid_view.dart';
+import 'package:system_storage_manager_demo/views/mobile_list_view.dart';
 
 void main() {
   runApp(const SSMExampleApp());
@@ -39,8 +43,11 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
     super.initState();
   }
 
-  Future<void> _pickDir() async {
-    final result = await manager.pickDir();
+  Future<void> _pickDir({bool? writePerm, bool? persistPerm}) async {
+    final result = await manager.pickDir(
+      writePermission: writePerm,
+      persistablePermission: persistPerm,
+    );
     if (result != null) {
       setState(() {
         selectedPath = result.uri;
@@ -93,10 +100,7 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
   }
 
   Future<void> _goBack() async {
-    List<String> uriList = [...Uri.parse(currentPath).pathSegments];
-    uriList.removeAt(uriList.length - 2);
-    String newUri = Uri(scheme: 'file', path: uriList.join('/')).toString();
-
+    final newUri = await manager.parentUri(currentPath);
     setState(() => currentPath = newUri);
     _listFiles(uri: newUri);
   }
@@ -125,53 +129,31 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
           : null,
       body: loading
           ? const Center(child: CircularProgressIndicator())
-          : selectedPath == null
-          ? ListTile(
-              title: Text('Select Folder Path'),
-              subtitle: Text('Press Me'),
-              onTap: _pickDir,
-            )
-          : GridView.builder(
-              itemCount: files.length,
-              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 300,
-                childAspectRatio: 6 / 2,
-                crossAxisSpacing: 5,
-                mainAxisSpacing: 5,
-              ),
-              itemBuilder: (context, index) {
-                final file = files[index];
-                return Card(
-                  color: Colors.grey[200],
-                  child: ListTile(
-                    leading: file.isDir
-                        ? Icon(Icons.folder, color: Colors.purple)
-                        : Icon(Icons.insert_drive_file, color: Colors.blue),
-                    title: Text(
-                      file.name,
-                      style: TextStyle(
-                        overflow: TextOverflow.ellipsis,
-                        fontWeight: FontWeight.bold,
+          : Column(
+              children: [
+                selectedPath == null
+                    ? ListTile(
+                        title: Text('Select Folder Path'),
+                        subtitle: Text('Press Me'),
+                        onTap: () =>
+                            _pickDir(writePerm: true, persistPerm: true),
+                      )
+                    : Platform.isAndroid || Platform.isIOS
+                    ? Expanded(
+                        child: MobileListView(
+                          files: files,
+                          deleteFile: _deleteFile,
+                          listFiles: _listFiles,
+                        ),
+                      )
+                    : Expanded(
+                        child: DesktopGridView(
+                          files: files,
+                          deleteFile: _deleteFile,
+                          listFiles: _listFiles,
+                        ),
                       ),
-                    ),
-                    subtitle: Text(
-                      Uri.parse(file.uri).toFilePath(),
-                      style: TextStyle(overflow: TextOverflow.ellipsis),
-                      softWrap: true,
-                      maxLines: 2,
-                    ),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () => _deleteFile(file.uri),
-                    ),
-                    onTap: file.isDir
-                        ? () {
-                            _listFiles(uri: file.uri);
-                          }
-                        : null,
-                  ),
-                );
-              },
+              ],
             ),
     );
   }

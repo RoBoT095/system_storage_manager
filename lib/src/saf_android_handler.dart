@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as path;
 import 'package:saf_stream/saf_stream.dart';
 import 'package:saf_util/saf_util.dart';
@@ -14,8 +14,16 @@ class SafAndroidHandler implements FileHandler {
   final _safUtil = SafUtil();
 
   @override
-  Future<FileItem?> pickDir({String? initUri}) async {
-    final dir = await _safUtil.pickDirectory(initialUri: initUri);
+  Future<FileItem?> pickDir({
+    String? initUri,
+    bool? writePermission,
+    bool? persistablePermission,
+  }) async {
+    final dir = await _safUtil.pickDirectory(
+      initialUri: initUri,
+      writePermission: writePermission,
+      persistablePermission: persistablePermission,
+    );
     if (dir != null) {
       return FileItem(uri: dir.uri, name: dir.name, isDir: dir.isDir);
     }
@@ -102,6 +110,14 @@ class SafAndroidHandler implements FileHandler {
   }
 
   @override
+  Future<String> parentUri(String uri) async {
+    final parsedUri = Uri.parse(uri);
+    final parentSegments = parsedUri.pathSegments.toList()..removeLast();
+    final newUri = parsedUri.replace(pathSegments: parentSegments);
+    return newUri.toString();
+  }
+
+  @override
   Future<FileItem> copy(String fromUri, String toUri) async {
     final file = await _safUtil.copyTo(fromUri, await _isDir(fromUri), toUri);
     return FileItem(uri: file.uri, name: file.name, isDir: file.isDir);
@@ -109,18 +125,10 @@ class SafAndroidHandler implements FileHandler {
 
   @override
   Future<FileItem> move(String fromUri, String toUri) async {
-    final decodedParts = Uri.decodeComponent(
-      Uri.parse(fromUri).pathSegments.last,
-    ).split('/');
-    if (decodedParts.length > 1) {
-      decodedParts.removeLast();
-    }
-    final parentUri = Uri.encodeComponent((decodedParts.join('/')));
-
     final file = await _safUtil.moveTo(
       fromUri,
       await _isDir(fromUri),
-      parentUri,
+      await parentUri(fromUri),
       toUri,
     );
     return FileItem(uri: file.uri, name: file.name, isDir: file.isDir);

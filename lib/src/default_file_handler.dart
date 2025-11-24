@@ -7,7 +7,11 @@ import 'platform_interface.dart';
 
 class DefaultFileHandler implements FileHandler {
   @override
-  Future<FileItem?> pickDir({String? initUri}) async {
+  Future<FileItem?> pickDir({
+    String? initUri,
+    bool? writePermission,
+    bool? persistablePermission,
+  }) async {
     String? result = await FilePicker.platform.getDirectoryPath(
       initialDirectory: initUri != null
           ? Uri.parse(initUri).toFilePath()
@@ -109,6 +113,12 @@ class DefaultFileHandler implements FileHandler {
   Future<bool> exists(String uri) async {
     final file = _parseUriToFile(uri);
     return await file.exists();
+  }
+
+  @override
+  Future<String> parentUri(String uri) async {
+    final filePath = Uri.parse(uri).toFilePath();
+    return path.dirname(filePath);
   }
 
   @override
