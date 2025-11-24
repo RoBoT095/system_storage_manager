@@ -98,17 +98,32 @@ class SafAndroidHandler implements FileHandler {
 
   @override
   Future<bool> exists(String uri) async {
-    throw UnimplementedError();
+    return _safUtil.exists(uri, await _isDir(uri));
   }
 
   @override
   Future<FileItem> copy(String fromUri, String toUri) async {
-    throw UnimplementedError();
+    final file = await _safUtil.copyTo(fromUri, await _isDir(fromUri), toUri);
+    return FileItem(uri: file.uri, name: file.name, isDir: file.isDir);
   }
 
   @override
   Future<FileItem> move(String fromUri, String toUri) async {
-    throw UnimplementedError();
+    final decodedParts = Uri.decodeComponent(
+      Uri.parse(fromUri).pathSegments.last,
+    ).split('/');
+    if (decodedParts.length > 1) {
+      decodedParts.removeLast();
+    }
+    final parentUri = Uri.encodeComponent((decodedParts.join('/')));
+
+    final file = await _safUtil.moveTo(
+      fromUri,
+      await _isDir(fromUri),
+      parentUri,
+      toUri,
+    );
+    return FileItem(uri: file.uri, name: file.name, isDir: file.isDir);
   }
 
   @override
