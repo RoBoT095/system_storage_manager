@@ -70,7 +70,7 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
   Future<void> _createFile() async {
     final name = DateTime.now().millisecondsSinceEpoch.toString();
     try {
-      await manager.createFile(currentPath, 'file_$name.txt');
+      await manager.create(currentPath, 'file_$name.txt');
       _listFiles();
     } catch (e) {
       debugPrint('Create Error: $e');

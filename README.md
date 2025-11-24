@@ -11,15 +11,15 @@ Created for [Print(Notes)](https://github.com/RoBoT095/printnotes)
 - Pick file from storage
 - Pick multiple files from storage
 - Pick folder
+- List folder contents
 - Create
+- Rename
 - Copy to
 - Move to
 - Delete
-- Rename
 - Check if it exists
-- List folder contents
-- Read file
-- Write to file
+- Read file as string or bytes
+- Write to file as string or bytes
 - Get item stats
 
 ## Notes:

@@ -2,19 +2,18 @@ import 'platform_interface.dart';
 
 class SafAndroidHandler implements FileHandler {
   // TODO everything
-
-  @override
-  Future<FileItem?> pickFile() async {
-    return null;
-  }
-
-  @override
-  Future<List<FileItem>?> pickFiles() async {
-    return null;
-  }
-
   @override
   Future<FileItem?> pickDir() async {
+    return null;
+  }
+
+  @override
+  Future<FileItem?> pickFile({List<String>? allowedExtensions}) async {
+    return null;
+  }
+
+  @override
+  Future<List<FileItem>?> pickFiles({List<String>? allowedExtensions}) async {
     return null;
   }
 
@@ -27,12 +26,22 @@ class SafAndroidHandler implements FileHandler {
   }
 
   @override
-  Future<FileItem> createFile(String uri, String name) async {
+  Future<FileItem> create(String uri, String name) async {
     throw UnimplementedError();
   }
 
   @override
   Future<FileItem> rename(String uri, String newName) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<bool> delete(String uri) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<bool> exists(String uri) async {
     throw UnimplementedError();
   }
 
@@ -47,12 +56,30 @@ class SafAndroidHandler implements FileHandler {
   }
 
   @override
-  Future<bool> delete(String uri) async {
+  Future<String> readAsString(String uri) async {
     throw UnimplementedError();
   }
 
   @override
-  Future<bool> exists(String uri) async {
+  Future<List<int>> readAsBytes(String uri) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<FileItem> writeAsString(
+    String uri,
+    String contents, {
+    String mime = 'text/plain',
+  }) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<FileItem> writeAsBytes(
+    String uri,
+    List<int> bytes, {
+    String mime = 'text/plain',
+  }) async {
     throw UnimplementedError();
   }
 }
