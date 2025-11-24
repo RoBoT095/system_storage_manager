@@ -11,7 +11,7 @@ abstract class FileHandler {
 
   static bool get _isAndroid => Platform.isAndroid;
 
-  Future<FileItem?> pickDir();
+  Future<FileItem?> pickDir({String? initUri});
   Future<FileItem?> pickFile({List<String>? allowedExtensions});
   Future<List<FileItem>?> pickFiles({List<String>? allowedExtensions});
   Future<List<FileItem>> listFiles(String uri, {bool showHidden = false});

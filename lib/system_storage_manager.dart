@@ -14,7 +14,8 @@ class SystemStorageManager {
   final FileHandler _handler = FileHandler.createHandler();
 
   /// Opens file picker to select directory
-  Future<FileItem?> pickDir() => _handler.pickDir();
+  Future<FileItem?> pickDir({String? initUri}) =>
+      _handler.pickDir(initUri: initUri);
 
   /// Opens file picker to select a single file
   Future<FileItem?> pickFile({List<String>? allowedExtensions}) =>

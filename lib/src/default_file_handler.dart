@@ -6,13 +6,13 @@ import 'package:file_picker/file_picker.dart';
 import 'platform_interface.dart';
 
 class DefaultFileHandler implements FileHandler {
-  File _parseUriToFile(String uri) {
-    return File.fromUri(Uri.parse(uri));
-  }
-
   @override
-  Future<FileItem?> pickDir() async {
-    String? result = await FilePicker.platform.getDirectoryPath();
+  Future<FileItem?> pickDir({String? initUri}) async {
+    String? result = await FilePicker.platform.getDirectoryPath(
+      initialDirectory: initUri != null
+          ? Uri.parse(initUri).toFilePath()
+          : null,
+    );
     if (result != null) {
       return FileItem(
         // Uri folders need to end in '/'
@@ -56,20 +56,21 @@ class DefaultFileHandler implements FileHandler {
     String uri, {
     bool showHidden = false,
   }) async {
-    final dir = Directory.fromUri(Uri.parse(uri));
-    final entities = await dir.list().toList();
-    final List<FileItem> fileItems = [];
-    for (var e in entities) {
-      final name = path.basename(e.uri.toFilePath());
-      final isHidden = name.startsWith('.');
+    final entities = await Directory.fromUri(Uri.parse(uri)).list().toList();
 
-      if (showHidden || !isHidden) {
-        fileItems.add(
-          FileItem(uri: e.uri.toString(), name: name, isDir: e is Directory),
-        );
-      }
-    }
-    return fileItems;
+    return entities
+        .where((e) {
+          if (showHidden) return true;
+          return !e.uri.toFilePath().startsWith('.');
+        })
+        .map(
+          (e) => FileItem(
+            uri: e.uri.toString(),
+            name: path.basename(e.uri.toFilePath()),
+            isDir: e is Directory,
+          ),
+        )
+        .toList();
   }
 
   @override
@@ -78,7 +79,11 @@ class DefaultFileHandler implements FileHandler {
       '${Uri.parse(uri).toFilePath()}${Platform.pathSeparator}$name',
     );
     await file.create();
-    return FileItem(uri: file.uri.toString(), name: name);
+    return FileItem(
+      uri: file.uri.toString(),
+      name: name,
+      isDir: file is Directory,
+    );
   }
 
   @override
@@ -86,7 +91,11 @@ class DefaultFileHandler implements FileHandler {
     final file = _parseUriToFile(uri);
     final newPath = '${file.parent.path}/$newName';
     final renamed = await file.rename(newPath);
-    return FileItem(uri: renamed.uri.toString(), name: newName);
+    return FileItem(
+      uri: renamed.uri.toString(),
+      name: newName,
+      isDir: renamed is Directory,
+    );
   }
 
   @override
@@ -106,14 +115,22 @@ class DefaultFileHandler implements FileHandler {
   Future<FileItem> copy(String fromUri, String toUri) async {
     final src = _parseUriToFile(fromUri);
     final dest = await src.copy(toUri);
-    return FileItem(uri: dest.uri.toString(), name: dest.uri.pathSegments.last);
+    return FileItem(
+      uri: dest.uri.toString(),
+      name: dest.uri.pathSegments.last,
+      isDir: dest is Directory,
+    );
   }
 
   @override
   Future<FileItem> move(String fromUri, String toUri) async {
     final src = _parseUriToFile(fromUri);
     final dest = await src.rename(toUri);
-    return FileItem(uri: dest.uri.toString(), name: dest.uri.pathSegments.last);
+    return FileItem(
+      uri: dest.uri.toString(),
+      name: dest.uri.pathSegments.last,
+      isDir: dest is Directory,
+    );
   }
 
   @override
@@ -135,7 +152,11 @@ class DefaultFileHandler implements FileHandler {
     String mime = 'text/plain',
   }) async {
     final file = await _parseUriToFile(uri).writeAsString(contents);
-    return FileItem(uri: file.uri.toString(), name: path.basename(file.path));
+    return FileItem(
+      uri: file.uri.toString(),
+      name: path.basename(file.path),
+      isDir: file is Directory,
+    );
   }
 
   @override
@@ -145,6 +166,14 @@ class DefaultFileHandler implements FileHandler {
     String mime = 'text/plain',
   }) async {
     final file = await _parseUriToFile(uri).writeAsBytes(bytes);
-    return FileItem(uri: file.uri.toString(), name: path.basename(file.path));
+    return FileItem(
+      uri: file.uri.toString(),
+      name: path.basename(file.path),
+      isDir: file is Directory,
+    );
+  }
+
+  File _parseUriToFile(String uri) {
+    return File.fromUri(Uri.parse(uri));
   }
 }
