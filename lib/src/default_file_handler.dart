@@ -78,16 +78,19 @@ class DefaultFileHandler implements FileHandler {
   }
 
   @override
-  Future<FileItem> create(String uri, String name) async {
-    final file = File(
-      '${Uri.parse(uri).toFilePath()}${Platform.pathSeparator}$name',
-    );
-    await file.create();
-    return FileItem(
-      uri: file.uri.toString(),
-      name: name,
-      isDir: file is Directory,
-    );
+  Future<FileItem> create(String uri, String name, {bool isDir = false}) async {
+    FileSystemEntity item;
+    if (isDir) {
+      item = Directory('${Uri.parse(uri).toFilePath()}/$name');
+    } else {
+      item = File('${Uri.parse(uri).toFilePath()}/$name');
+    }
+    if (isDir) {
+      (item as File).create();
+    } else {
+      (item as Directory).create();
+    }
+    return FileItem(uri: item.uri.toString(), name: name, isDir: isDir);
   }
 
   @override

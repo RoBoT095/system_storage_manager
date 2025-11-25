@@ -20,7 +20,7 @@ abstract class FileHandler {
   Future<List<FileItem>?> pickFiles({List<String>? allowedExtensions});
   Future<List<FileItem>> listFiles(String uri, {bool showHidden = false});
 
-  Future<FileItem> create(String uri, String name);
+  Future<FileItem> create(String uri, String name, {bool isDir});
   Future<FileItem> rename(String uri, String newName);
   Future<bool> delete(String uri);
 

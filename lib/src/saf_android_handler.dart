@@ -87,7 +87,11 @@ class SafAndroidHandler implements FileHandler {
   }
 
   @override
-  Future<FileItem> create(String uri, String name) async {
+  Future<FileItem> create(String uri, String name, {bool isDir = false}) async {
+    if (isDir) {
+      final dir = await _safUtil.mkdirp(uri, [name]);
+      return FileItem(uri: dir.uri, name: dir.name, isDir: dir.isDir);
+    }
     return writeAsBytes(path.join(uri, name), []);
   }
 

@@ -37,7 +37,7 @@ class SystemStorageManager {
 
   /// Opens file picker to select multiple files
   ///
-  /// [allowedExtensions] can be provided (e.g. [pdf, svg, jpg].) to limit what
+  /// [allowedExtensions] can be provided (e.g. ['pdf', 'svg', 'jpg'].) to limit what
   /// type of files are selected
   Future<List<FileItem>?> pickFiles({List<String>? allowedExtensions}) =>
       _handler.pickFiles(allowedExtensions: allowedExtensions);
@@ -50,8 +50,8 @@ class SystemStorageManager {
       _handler.listFiles(uri, showHidden: showHidden);
 
   ///
-  Future<FileItem> create(String uri, String name) =>
-      _handler.create(uri, name);
+  Future<FileItem> create(String uri, String name, {bool isDir = false}) =>
+      _handler.create(uri, name, isDir: isDir);
 
   /// Renames file or folder to a new name
   ///
