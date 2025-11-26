@@ -1,10 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'package:system_storage_manager/system_storage_manager.dart';
-import 'package:system_storage_manager_demo/views/desktop_grid_view.dart';
-import 'package:system_storage_manager_demo/views/mobile_list_view.dart';
+import 'package:system_storage_manager_demo/file_list_view.dart';
 
 void main() {
   runApp(const SSMExampleApp());
@@ -33,14 +31,28 @@ class FileManagerDemo extends StatefulWidget {
 
 class _FileManagerDemoState extends State<FileManagerDemo> {
   final manager = SystemStorageManager();
+  late String defaultPath;
   String? selectedPath;
   String currentPath = '/';
+  String? selectedFile;
   List<FileItem> files = [];
   bool loading = false;
 
   @override
   void initState() {
     super.initState();
+    _loadDefaultDir();
+  }
+
+  void _loadDefaultDir() async {
+    setState(() => loading = true);
+    final appDoc = await getApplicationDocumentsDirectory();
+    setState(() {
+      defaultPath = appDoc.uri.toString();
+      selectedPath = defaultPath;
+      currentPath = defaultPath;
+      loading = false;
+    });
   }
 
   Future<void> _pickDir({bool? writePerm, bool? persistPerm}) async {
@@ -59,7 +71,7 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
   Future<void> _listFiles({String? uri}) async {
     setState(() {
       loading = true;
-      currentPath = uri ?? selectedPath ?? '/';
+      currentPath = uri ?? selectedPath ?? defaultPath;
     });
     try {
       final result = await manager.listFiles(currentPath, showHidden: false);
@@ -108,51 +120,108 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('System Storage Manager Example'),
-        actions: [
-          if (selectedPath != null)
-            IconButton(
-              icon: const Icon(Icons.refresh),
-              onPressed: () => _listFiles(uri: currentPath),
-            ),
-        ],
-        leading: selectedPath != null && selectedPath != currentPath
-            ? IconButton(icon: Icon(Icons.chevron_left), onPressed: _goBack)
-            : null,
-      ),
-      floatingActionButton: selectedPath != null
-          ? FloatingActionButton(
-              onPressed: _createFile,
-              child: const Icon(Icons.add),
-            )
-          : null,
+      appBar: AppBar(title: const Text('SSM Example')),
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
-                selectedPath == null
-                    ? ListTile(
-                        title: Text('Select Folder Path'),
-                        subtitle: Text('Press Me'),
-                        onTap: () =>
-                            _pickDir(writePerm: true, persistPerm: true),
-                      )
-                    : Platform.isAndroid || Platform.isIOS
-                    ? Expanded(
-                        child: MobileListView(
-                          files: files,
-                          deleteFile: _deleteFile,
-                          listFiles: _listFiles,
-                        ),
-                      )
-                    : Expanded(
-                        child: DesktopGridView(
-                          files: files,
-                          deleteFile: _deleteFile,
-                          listFiles: _listFiles,
+                Text('Selected Path: $selectedPath'),
+                Text('Current Path: $currentPath'),
+                Text('Selected File: $selectedFile'),
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.45,
+                  child: GridView.count(
+                    crossAxisCount: 3,
+                    childAspectRatio: 2,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: [
+                      Card(
+                        child: TextButton(
+                          onPressed: () =>
+                              _pickDir(writePerm: true, persistPerm: true),
+                          child: Text('Select Folder'),
                         ),
                       ),
+                      Card(
+                        child: TextButton(
+                          onPressed: () => _createFile(),
+                          child: Text('Create file'),
+                        ),
+                      ),
+                      Card(
+                        child: TextButton(
+                          onPressed: () {},
+                          child: Text('Read File'),
+                        ),
+                      ),
+                      Card(
+                        child: TextButton(
+                          onPressed: () {},
+                          child: Text('Write to File'),
+                        ),
+                      ),
+                      Card(
+                        child: TextButton(
+                          onPressed: () {},
+                          child: Text('Copy'),
+                        ),
+                      ),
+                      Card(
+                        child: TextButton(
+                          onPressed: () {},
+                          child: Text('Move'),
+                        ),
+                      ),
+                      Card(
+                        child: TextButton(
+                          onPressed: () {},
+                          child: Text('Rename'),
+                        ),
+                      ),
+                      Card(
+                        child: TextButton(
+                          onPressed: () {},
+                          child: Text('Pick File'),
+                        ),
+                      ),
+                      Card(
+                        child: TextButton(
+                          onPressed: () {},
+                          child: Text('Pick Multiple Files'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Scaffold(
+                    appBar: AppBar(
+                      title: Text('File System View'),
+                      leading:
+                          selectedPath != null && selectedPath != currentPath
+                          ? IconButton(
+                              icon: Icon(Icons.chevron_left),
+                              onPressed: _goBack,
+                            )
+                          : null,
+                      actions: [
+                        if (selectedPath != null)
+                          IconButton(
+                            icon: const Icon(Icons.refresh),
+                            onPressed: () => _listFiles(uri: currentPath),
+                          ),
+                      ],
+                    ),
+                    body: FileListView(
+                      files: files,
+                      deleteFile: _deleteFile,
+                      listFiles: _listFiles,
+                      selectedFile: (file) => setState(() {
+                        selectedFile = file;
+                      }),
+                    ),
+                  ),
+                ),
               ],
             ),
     );
