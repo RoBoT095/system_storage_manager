@@ -95,7 +95,7 @@ class DefaultFileHandler implements FileHandler {
 
   @override
   Future<FileItem> rename(String uri, String newName) async {
-    final file = _parseUriToFile(uri);
+    final file = _parseUriToFSE(uri);
     final newPath = '${file.parent.path}/$newName';
     final renamed = await file.rename(newPath);
     return FileItem(
@@ -107,37 +107,62 @@ class DefaultFileHandler implements FileHandler {
 
   @override
   Future<bool> delete(String uri) async {
-    final file = _parseUriToFile(uri);
+    final file = _parseUriToFSE(uri);
     await file.delete();
     return true;
   }
 
   @override
   Future<bool> exists(String uri) async {
-    final file = _parseUriToFile(uri);
+    final FileSystemEntity file;
+    if (_isDir(uri)) {
+      file = _parseUriToFSE(uri);
+    } else {
+      file = _parseUriToFSE(uri);
+    }
     return await file.exists();
   }
 
   @override
   Future<String> parentUri(String uri) async {
-    final filePath = Uri.parse(uri).toFilePath();
-    return path.dirname(filePath);
+    final dir = _parseUriToFSE(uri);
+    final parent = path.dirname(dir.path);
+    return Directory.fromUri(Uri.parse(parent)).uri.toString();
   }
 
   @override
   Future<FileItem> copy(String fromUri, String toUri) async {
-    final src = _parseUriToFile(fromUri);
-    final dest = await src.copy(toUri);
+    final src = _parseUriToFSE(fromUri);
+    if (_isDir(fromUri)) {
+      final dest = _parseUriToFSE(toUri) as Directory;
+      await dest.create(recursive: true);
+      (src as Directory).list(recursive: false).map((item) async {
+        if (item is Directory) {
+          final newDir = Directory(
+            path.join(dest.path, path.basename(item.path)),
+          );
+          await copy(item.uri.toString(), newDir.uri.toString());
+        } else if (item is File) {
+          await item.copy(path.join(dest.path, path.basename(item.path)));
+        }
+      });
+      return FileItem(
+        uri: dest.uri.toString(),
+        name: dest.uri.pathSegments.last,
+        isDir: true,
+      );
+    }
+    final dest = await (src as File).copy(toUri);
     return FileItem(
       uri: dest.uri.toString(),
       name: dest.uri.pathSegments.last,
-      isDir: dest is Directory,
+      isDir: false,
     );
   }
 
   @override
   Future<FileItem> move(String fromUri, String toUri) async {
-    final src = _parseUriToFile(fromUri);
+    final src = _parseUriToFSE(fromUri);
     final dest = await src.rename(toUri);
     return FileItem(
       uri: dest.uri.toString(),
@@ -148,13 +173,13 @@ class DefaultFileHandler implements FileHandler {
 
   @override
   Future<String> readAsString(String uri) async {
-    final file = _parseUriToFile(uri);
+    final file = _parseUriToFSE(uri) as File;
     return file.readAsString();
   }
 
   @override
   Future<List<int>> readAsBytes(String uri) async {
-    final file = _parseUriToFile(uri);
+    final file = _parseUriToFSE(uri) as File;
     return file.readAsBytes();
   }
 
@@ -164,7 +189,7 @@ class DefaultFileHandler implements FileHandler {
     String contents, {
     String mime = 'text/plain',
   }) async {
-    final file = await _parseUriToFile(uri).writeAsString(contents);
+    final file = await (_parseUriToFSE(uri) as File).writeAsString(contents);
     return FileItem(
       uri: file.uri.toString(),
       name: path.basename(file.path),
@@ -178,7 +203,7 @@ class DefaultFileHandler implements FileHandler {
     List<int> bytes, {
     String mime = 'text/plain',
   }) async {
-    final file = await _parseUriToFile(uri).writeAsBytes(bytes);
+    final file = await (_parseUriToFSE(uri) as File).writeAsBytes(bytes);
     return FileItem(
       uri: file.uri.toString(),
       name: path.basename(file.path),
@@ -186,7 +211,21 @@ class DefaultFileHandler implements FileHandler {
     );
   }
 
-  File _parseUriToFile(String uri) {
+  FileSystemEntity _parseUriToFSE(String uri) {
+    if (_isDir(uri)) {
+      return Directory.fromUri(Uri.parse(uri));
+    }
     return File.fromUri(Uri.parse(uri));
+  }
+
+  bool _isDir(String uri) {
+    try {
+      // Check if listing succeeds, if so, it's a directory
+      Directory.fromUri(Uri.parse(uri)).list();
+      return true;
+    } catch (e) {
+      // If failed, probably a file
+      return false;
+    }
   }
 }
