@@ -115,7 +115,7 @@ class DefaultFileHandler implements FileHandler {
   @override
   Future<bool> exists(String uri) async {
     final FileSystemEntity file;
-    if (_isDir(uri)) {
+    if (isDir(uri)) {
       file = _parseUriToFSE(uri);
     } else {
       file = _parseUriToFSE(uri);
@@ -133,7 +133,7 @@ class DefaultFileHandler implements FileHandler {
   @override
   Future<FileItem> copy(String fromUri, String toUri) async {
     final src = _parseUriToFSE(fromUri);
-    if (_isDir(fromUri)) {
+    if (isDir(fromUri)) {
       final dest = _parseUriToFSE(toUri) as Directory;
       await dest.create(recursive: true);
       (src as Directory).list(recursive: false).map((item) async {
@@ -212,13 +212,13 @@ class DefaultFileHandler implements FileHandler {
   }
 
   FileSystemEntity _parseUriToFSE(String uri) {
-    if (_isDir(uri)) {
+    if (isDir(uri)) {
       return Directory.fromUri(Uri.parse(uri));
     }
     return File.fromUri(Uri.parse(uri));
   }
 
-  bool _isDir(String uri) {
+  bool isDir(String uri) {
     try {
       // Check if listing succeeds, if so, it's a directory
       Directory.fromUri(Uri.parse(uri)).list();

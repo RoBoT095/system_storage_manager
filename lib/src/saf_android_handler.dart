@@ -6,6 +6,7 @@ import 'package:path/path.dart' as path;
 import 'package:saf_stream/saf_stream.dart';
 import 'package:saf_util/saf_util.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:system_storage_manager/src/default_file_handler.dart';
 
 import 'platform_interface.dart';
 
@@ -76,6 +77,9 @@ class SafAndroidHandler implements FileHandler {
     String uri, {
     bool showHidden = false,
   }) async {
+    if (Uri.parse(uri).scheme == 'file') {
+      return DefaultFileHandler().listFiles(uri);
+    }
     final list = await _safUtil.list(uri);
     return list
         .where((e) {
@@ -88,6 +92,9 @@ class SafAndroidHandler implements FileHandler {
 
   @override
   Future<FileItem> create(String uri, String name, {bool isDir = false}) async {
+    if (Uri.parse(uri).scheme == 'file') {
+      return DefaultFileHandler().create(uri, name, isDir: isDir);
+    }
     if (isDir) {
       final dir = await _safUtil.mkdirp(uri, [name]);
       return FileItem(uri: dir.uri, name: dir.name, isDir: dir.isDir);
@@ -97,24 +104,36 @@ class SafAndroidHandler implements FileHandler {
 
   @override
   Future<FileItem> rename(String uri, String newName) async {
-    final renamed = await _safUtil.rename(uri, await _isDir(uri), newName);
+    if (Uri.parse(uri).scheme == 'file') {
+      return DefaultFileHandler().rename(uri, newName);
+    }
+    final renamed = await _safUtil.rename(uri, await isDir(uri), newName);
     return FileItem(uri: renamed.uri, name: renamed.name, isDir: renamed.isDir);
   }
 
   @override
   Future<bool> delete(String uri) async {
-    await _safUtil.delete(uri, await _isDir(uri));
+    if (Uri.parse(uri).scheme == 'file') {
+      return DefaultFileHandler().delete(uri);
+    }
+    await _safUtil.delete(uri, await isDir(uri));
     bool exits = await exists(uri);
     return !exits;
   }
 
   @override
   Future<bool> exists(String uri) async {
-    return _safUtil.exists(uri, await _isDir(uri));
+    if (Uri.parse(uri).scheme == 'file') {
+      return DefaultFileHandler().exists(uri);
+    }
+    return _safUtil.exists(uri, await isDir(uri));
   }
 
   @override
   Future<String> parentUri(String uri) async {
+    if (Uri.parse(uri).scheme == 'file') {
+      return DefaultFileHandler().parentUri(uri);
+    }
     final parsedUri = Uri.parse(uri);
     final parentSegments = parsedUri.pathSegments.toList()..removeLast();
     final newUri = parsedUri.replace(pathSegments: parentSegments);
@@ -123,15 +142,21 @@ class SafAndroidHandler implements FileHandler {
 
   @override
   Future<FileItem> copy(String fromUri, String toUri) async {
-    final file = await _safUtil.copyTo(fromUri, await _isDir(fromUri), toUri);
+    if (Uri.parse(fromUri).scheme == 'file') {
+      return DefaultFileHandler().copy(fromUri, toUri);
+    }
+    final file = await _safUtil.copyTo(fromUri, await isDir(fromUri), toUri);
     return FileItem(uri: file.uri, name: file.name, isDir: file.isDir);
   }
 
   @override
   Future<FileItem> move(String fromUri, String toUri) async {
+    if (Uri.parse(fromUri).scheme == 'file') {
+      return DefaultFileHandler().move(fromUri, toUri);
+    }
     final file = await _safUtil.moveTo(
       fromUri,
-      await _isDir(fromUri),
+      await isDir(fromUri),
       await parentUri(fromUri),
       toUri,
     );
@@ -140,11 +165,17 @@ class SafAndroidHandler implements FileHandler {
 
   @override
   Future<String> readAsString(String uri) async {
+    if (Uri.parse(uri).scheme == 'file') {
+      return DefaultFileHandler().readAsString(uri);
+    }
     return utf8.decode(await readAsBytes(uri));
   }
 
   @override
   Future<List<int>> readAsBytes(String uri) async {
+    if (Uri.parse(uri).scheme == 'file') {
+      return DefaultFileHandler().readAsBytes(uri);
+    }
     return _safStream.readFileBytes(uri);
   }
 
@@ -154,6 +185,9 @@ class SafAndroidHandler implements FileHandler {
     String contents, {
     String mime = 'text/plain',
   }) async {
+    if (Uri.parse(uri).scheme == 'file') {
+      return DefaultFileHandler().writeAsString(uri, contents);
+    }
     return writeAsBytes(uri, utf8.encode(contents), mime: mime);
   }
 
@@ -163,6 +197,9 @@ class SafAndroidHandler implements FileHandler {
     List<int> bytes, {
     String mime = 'text/plain',
   }) async {
+    if (Uri.parse(uri).scheme == 'file') {
+      return DefaultFileHandler().writeAsBytes(uri, bytes);
+    }
     final newFile = await _safStream.writeFileBytes(
       Uri.parse(path.dirname(uri)).toString(),
       path.basename(uri),
@@ -173,11 +210,15 @@ class SafAndroidHandler implements FileHandler {
     return FileItem(
       uri: newFile.uri.toString(),
       name: newFile.fileName ?? path.basename(newFile.uri.toString()),
-      isDir: await _isDir(newFile.uri.toString()),
+      isDir: await isDir(newFile.uri.toString()),
     );
   }
 
-  Future<bool> _isDir(String uri) async {
+  Future<bool> isDir(String uri) async {
+    if (Uri.parse(uri).scheme == 'file') {
+      return DefaultFileHandler().isDir(uri);
+    }
+
     try {
       // Check if listing succeeds, if so, it's a directory
       await _safUtil.list(uri);

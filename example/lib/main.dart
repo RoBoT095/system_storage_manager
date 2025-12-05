@@ -36,7 +36,7 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
   String currentPath = '/';
   String? selectedFile;
   List<FileItem> files = [];
-  bool loading = false;
+  bool loading = true;
 
   @override
   void initState() {
@@ -120,110 +120,145 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('SSM Example')),
+      appBar: AppBar(
+        title: const Text('SSM Example'),
+        actions: [
+          IconButton(
+            onPressed: () => _showInfoDialog(),
+            icon: Icon(Icons.info_outline),
+          ),
+        ],
+      ),
       body: loading
           ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                Text('Selected Path: $selectedPath'),
-                Text('Current Path: $currentPath'),
-                Text('Selected File: $selectedFile'),
-                SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.45,
-                  child: GridView.count(
-                    crossAxisCount: 3,
-                    childAspectRatio: 2,
-                    physics: const NeverScrollableScrollPhysics(),
-                    children: [
-                      Card(
-                        child: TextButton(
-                          onPressed: () =>
-                              _pickDir(writePerm: true, persistPerm: true),
-                          child: Text('Select Folder'),
+          : Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final screenWidth = MediaQuery.sizeOf(context).width;
+                      final maxWidth = constraints.maxWidth;
+                      final double buttonWidth = screenWidth > 650
+                          ? (maxWidth / 3 - 16)
+                          : screenWidth > 320
+                          ? (maxWidth / 2 - 16)
+                          : (maxWidth / 1 - 16);
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Wrap(
+                          spacing: 4,
+                          runSpacing: 4,
+                          children: [
+                            _buildButtonCard(
+                              'Select Folder',
+                              () =>
+                                  _pickDir(writePerm: true, persistPerm: true),
+                              buttonWidth,
+                            ),
+                            _buildButtonCard(
+                              'Create file',
+                              _createFile,
+                              buttonWidth,
+                            ),
+                            _buildButtonCard('Read File', () {}, buttonWidth),
+                            _buildButtonCard(
+                              'Write to File',
+                              () {},
+                              buttonWidth,
+                            ),
+                            _buildButtonCard('Copy', () {}, buttonWidth),
+                            _buildButtonCard('Move', () {}, buttonWidth),
+                            _buildButtonCard('Rename', () {}, buttonWidth),
+                            _buildButtonCard('Pick File', () {}, buttonWidth),
+                            _buildButtonCard(
+                              'Pick Multiple Files',
+                              () {},
+                              buttonWidth,
+                            ),
+                          ],
                         ),
-                      ),
-                      Card(
-                        child: TextButton(
-                          onPressed: () => _createFile(),
-                          child: Text('Create file'),
-                        ),
-                      ),
-                      Card(
-                        child: TextButton(
-                          onPressed: () {},
-                          child: Text('Read File'),
-                        ),
-                      ),
-                      Card(
-                        child: TextButton(
-                          onPressed: () {},
-                          child: Text('Write to File'),
-                        ),
-                      ),
-                      Card(
-                        child: TextButton(
-                          onPressed: () {},
-                          child: Text('Copy'),
-                        ),
-                      ),
-                      Card(
-                        child: TextButton(
-                          onPressed: () {},
-                          child: Text('Move'),
-                        ),
-                      ),
-                      Card(
-                        child: TextButton(
-                          onPressed: () {},
-                          child: Text('Rename'),
-                        ),
-                      ),
-                      Card(
-                        child: TextButton(
-                          onPressed: () {},
-                          child: Text('Pick File'),
-                        ),
-                      ),
-                      Card(
-                        child: TextButton(
-                          onPressed: () {},
-                          child: Text('Pick Multiple Files'),
-                        ),
-                      ),
-                    ],
+                      );
+                    },
                   ),
-                ),
-                Expanded(
-                  child: Scaffold(
-                    appBar: AppBar(
-                      title: Text('File System View'),
-                      leading:
-                          selectedPath != null && selectedPath != currentPath
-                          ? IconButton(
-                              icon: Icon(Icons.chevron_left),
-                              onPressed: _goBack,
-                            )
-                          : null,
-                      actions: [
-                        if (selectedPath != null)
-                          IconButton(
-                            icon: const Icon(Icons.refresh),
-                            onPressed: () => _listFiles(uri: currentPath),
-                          ),
-                      ],
-                    ),
-                    body: FileListView(
-                      files: files,
-                      deleteFile: _deleteFile,
-                      listFiles: _listFiles,
-                      selectedFile: (file) => setState(() {
-                        selectedFile = file;
-                      }),
+                  Expanded(
+                    child: Scaffold(
+                      appBar: AppBar(
+                        title: Text('File System View'),
+                        leading:
+                            selectedPath != null && selectedPath != currentPath
+                            ? IconButton(
+                                icon: Icon(Icons.chevron_left),
+                                onPressed: _goBack,
+                              )
+                            : null,
+                        actions: [
+                          if (selectedPath != null)
+                            IconButton(
+                              icon: const Icon(Icons.refresh),
+                              onPressed: () => _listFiles(uri: currentPath),
+                            ),
+                        ],
+                      ),
+                      body: FileListView(
+                        files: files,
+                        deleteFile: _deleteFile,
+                        listFiles: _listFiles,
+                        selectedFile: (file) => setState(() {
+                          selectedFile = file;
+                        }),
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
+    );
+  }
+
+  Widget _buildButtonCard(String label, VoidCallback onPressed, double width) {
+    return SizedBox(
+      width: width,
+      child: Card(
+        child: TextButton(
+          onPressed: onPressed,
+          child: Text(label, textAlign: TextAlign.center),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showInfoDialog() async {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('INFO'),
+        content: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            _textHeader('Selected Path:'),
+            Text('$selectedPath'),
+            _textHeader('Current Path:'),
+            Text(currentPath),
+            _textHeader('Selected File:'),
+            Text('$selectedFile'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _textHeader(String text) {
+    return Text(
+      text,
+      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
     );
   }
 }

@@ -24,6 +24,9 @@ class _FileListViewState extends State<FileListView> {
   FileItem? _selectedFile;
   @override
   Widget build(BuildContext context) {
+    if (widget.files.isEmpty) {
+      return Center(child: Text('No files or directories here'));
+    }
     return ListView.builder(
       itemCount: widget.files.length,
       itemBuilder: (context, index) {
