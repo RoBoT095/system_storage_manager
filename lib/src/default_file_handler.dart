@@ -86,9 +86,9 @@ class DefaultFileHandler implements FileHandler {
       item = File('${Uri.parse(uri).toFilePath()}/$name');
     }
     if (isDir) {
-      (item as File).create();
-    } else {
       (item as Directory).create();
+    } else {
+      (item as File).create();
     }
     return FileItem(uri: item.uri.toString(), name: name, isDir: isDir);
   }
@@ -163,7 +163,9 @@ class DefaultFileHandler implements FileHandler {
   @override
   Future<FileItem> move(String fromUri, String toUri) async {
     final src = _parseUriToFSE(fromUri);
-    final dest = await src.rename(toUri);
+    final dest = await src.rename(
+      path.join(Uri.parse(toUri).toFilePath(), path.basename(src.path)),
+    );
     return FileItem(
       uri: dest.uri.toString(),
       name: dest.uri.pathSegments.last,
@@ -219,13 +221,6 @@ class DefaultFileHandler implements FileHandler {
   }
 
   bool isDir(String uri) {
-    try {
-      // Check if listing succeeds, if so, it's a directory
-      Directory.fromUri(Uri.parse(uri)).list();
-      return true;
-    } catch (e) {
-      // If failed, probably a file
-      return false;
-    }
+    return FileSystemEntity.isDirectorySync(Uri.parse(uri).toFilePath());
   }
 }

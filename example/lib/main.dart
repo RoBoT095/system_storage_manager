@@ -3,6 +3,7 @@ import 'package:path_provider/path_provider.dart';
 
 import 'package:system_storage_manager/system_storage_manager.dart';
 import 'package:system_storage_manager_demo/file_list_view.dart';
+import 'package:system_storage_manager_demo/text_editor.dart';
 
 void main() {
   runApp(const SSMExampleApp());
@@ -36,6 +37,7 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
   String currentPath = '/';
   String? selectedFile;
   List<FileItem> files = [];
+  bool isMoving = false;
   bool loading = true;
 
   @override
@@ -63,9 +65,15 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
     if (result != null) {
       setState(() {
         selectedPath = result.uri;
+        selectedFile = null;
+        isMoving = false;
       });
       _listFiles();
     }
+  }
+
+  Future<void> _pickFile() async {
+    // TODO
   }
 
   Future<void> _listFiles({String? uri}) async {
@@ -86,16 +94,15 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
     }
   }
 
-  Future<void> _createFile() async {
-    final name = DateTime.now().millisecondsSinceEpoch.toString();
+  Future<void> _create(String name) async {
     try {
-      await manager.create(currentPath, 'file_$name.txt');
+      await manager.create(currentPath, name);
       _listFiles();
     } catch (e) {
       debugPrint('Create Error: $e');
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Create Error: $e')));
+      ).showSnackBar(SnackBar(content: Text('Creating Error: $e')));
     }
   }
 
@@ -107,8 +114,48 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
       debugPrint('Delete Error: $e');
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Delete Error: $e')));
+      ).showSnackBar(SnackBar(content: Text('Deleting Error: $e')));
     }
+  }
+
+  Future<void> _copy() async {
+    // TODO
+  }
+
+  Future<void> _move(String fromUri, String toUri) async {
+    try {
+      await manager.move(fromUri, toUri);
+      setState(() => isMoving = false);
+      selectedFile = null;
+      _listFiles(uri: currentPath);
+    } catch (e) {
+      debugPrint('Move Error: $e');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Moving Error: $e')));
+    }
+  }
+
+  Future<void> _rename(String uri, String newName) async {
+    try {
+      await manager.rename(uri, newName);
+      selectedFile = null;
+      _listFiles();
+    } catch (e) {
+      debugPrint('Rename Error: $e');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Renaming Error: $e')));
+    }
+  }
+
+  Future<void> _openFile() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TextEditor(fileUri: selectedFile!),
+      ),
+    );
   }
 
   Future<void> _goBack() async {
@@ -158,23 +205,57 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
                               buttonWidth,
                             ),
                             _buildButtonCard(
-                              'Create file',
-                              _createFile,
+                              'Pick File',
+                              () => _pickFile(),
                               buttonWidth,
                             ),
-                            _buildButtonCard('Read File', () {}, buttonWidth),
-                            _buildButtonCard(
-                              'Write to File',
-                              () {},
-                              buttonWidth,
-                            ),
-                            _buildButtonCard('Copy', () {}, buttonWidth),
-                            _buildButtonCard('Move', () {}, buttonWidth),
-                            _buildButtonCard('Rename', () {}, buttonWidth),
-                            _buildButtonCard('Pick File', () {}, buttonWidth),
                             _buildButtonCard(
                               'Pick Multiple Files',
                               () {},
+                              buttonWidth,
+                            ),
+                            _buildButtonCard(
+                              'Create file',
+                              () async => await _showTextDialog(
+                                title: 'Create',
+                                hint: 'Enter file name',
+                                (name) => _create(name),
+                              ),
+                              buttonWidth,
+                            ),
+                            _buildButtonCard(
+                              'Open File',
+                              selectedFile == null ? null : () => _openFile(),
+                              buttonWidth,
+                            ),
+                            _buildButtonCard(
+                              'Copy',
+                              selectedFile == null ? null : () => _copy(),
+                              buttonWidth,
+                            ),
+                            _buildButtonCard(
+                              isMoving ? 'Drop Here' : 'Move',
+                              selectedFile == null
+                                  ? null
+                                  : () {
+                                      if (!isMoving) {
+                                        setState(() => isMoving = true);
+                                      } else {
+                                        _move(selectedFile!, currentPath);
+                                      }
+                                    },
+                              buttonWidth,
+                            ),
+                            _buildButtonCard(
+                              'Rename',
+                              selectedFile == null
+                                  ? null
+                                  : () async => await _showTextDialog(
+                                      title: 'Rename',
+                                      hint: 'Enter new name',
+                                      (newName) =>
+                                          _rename(selectedFile!, newName),
+                                    ),
                               buttonWidth,
                             ),
                           ],
@@ -217,7 +298,43 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
     );
   }
 
-  Widget _buildButtonCard(String label, VoidCallback onPressed, double width) {
+  Future<void> _showTextDialog(
+    Function(String name) onConfirm, {
+    required String title,
+    String? hint,
+  }) async {
+    final controller = TextEditingController();
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: controller,
+              decoration: InputDecoration(hintText: hint),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              onConfirm(controller.text);
+            },
+            child: const Text('Confirm'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildButtonCard(String label, VoidCallback? onPressed, double width) {
     return SizedBox(
       width: width,
       child: Card(
@@ -247,7 +364,7 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.pop(context),
             child: const Text('close'),
           ),
         ],
