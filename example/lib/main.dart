@@ -55,6 +55,7 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
       currentPath = defaultPath;
       loading = false;
     });
+    _refresh();
   }
 
   Future<void> _pickDir({bool? writePerm, bool? persistPerm}) async {
@@ -68,12 +69,36 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
         selectedFile = null;
         isMoving = false;
       });
-      _listFiles();
+      await _listFiles();
     }
   }
 
   Future<void> _pickFile() async {
-    // TODO
+    try {
+      final file = await manager.pickFile();
+      if (file != null) {
+        _copy(uri: file.uri);
+      }
+    } catch (e) {
+      debugPrint('Pick File Error: $e');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Pick File Error: $e')));
+    }
+  }
+
+  Future<void> _pickMultiFiles() async {
+    try {
+      final fileList = await manager.pickFiles();
+      if (fileList != null) {
+        // TODO
+      }
+    } catch (e) {
+      debugPrint('Pick Multi Files Error: $e');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Pick Multi Files Error: $e')));
+    }
   }
 
   Future<void> _listFiles({String? uri}) async {
@@ -97,7 +122,7 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
   Future<void> _create(String name) async {
     try {
       await manager.create(currentPath, name);
-      _listFiles();
+      _refresh();
     } catch (e) {
       debugPrint('Create Error: $e');
       ScaffoldMessenger.of(
@@ -109,7 +134,7 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
   Future<void> _deleteFile(String uri) async {
     try {
       await manager.delete(uri);
-      _listFiles();
+      _refresh();
     } catch (e) {
       debugPrint('Delete Error: $e');
       ScaffoldMessenger.of(
@@ -118,8 +143,17 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
     }
   }
 
-  Future<void> _copy() async {
-    // TODO
+  Future<void> _copy({String? uri}) async {
+    try {
+      // TODO
+
+      _refresh();
+    } catch (e) {
+      debugPrint('Copy Error: $e');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Copying Error: $e')));
+    }
   }
 
   Future<void> _move(String fromUri, String toUri) async {
@@ -127,7 +161,7 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
       await manager.move(fromUri, toUri);
       setState(() => isMoving = false);
       selectedFile = null;
-      _listFiles(uri: currentPath);
+      _refresh();
     } catch (e) {
       debugPrint('Move Error: $e');
       ScaffoldMessenger.of(
@@ -140,7 +174,7 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
     try {
       await manager.rename(uri, newName);
       selectedFile = null;
-      _listFiles();
+      _refresh();
     } catch (e) {
       debugPrint('Rename Error: $e');
       ScaffoldMessenger.of(
@@ -162,6 +196,11 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
     final newUri = await manager.parentUri(currentPath);
     setState(() => currentPath = newUri);
     _listFiles(uri: newUri);
+  }
+
+  void _refresh() async {
+    debugPrint('Refreshed');
+    await _listFiles(uri: currentPath);
   }
 
   @override
@@ -205,13 +244,13 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
                               buttonWidth,
                             ),
                             _buildButtonCard(
-                              'Pick File',
+                              'Import File',
                               () => _pickFile(),
                               buttonWidth,
                             ),
                             _buildButtonCard(
-                              'Pick Multiple Files',
-                              () {},
+                              'Import Multiple Files',
+                              () => _pickMultiFiles(),
                               buttonWidth,
                             ),
                             _buildButtonCard(
@@ -278,7 +317,7 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
                           if (selectedPath != null)
                             IconButton(
                               icon: const Icon(Icons.refresh),
-                              onPressed: () => _listFiles(uri: currentPath),
+                              onPressed: () => _refresh(),
                             ),
                         ],
                       ),
