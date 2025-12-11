@@ -130,6 +130,22 @@ class SafAndroidHandler implements FileHandler {
   }
 
   @override
+  Future<FileItemStats?> stats(String uri) async {
+    // TODO
+    final stats = await _safUtil.stat(uri, await isDir(uri));
+    if (stats != null) {
+      return FileItemStats(
+        uri: uri,
+        name: stats.name,
+        isDir: stats.isDir,
+        size: 0, //FIXME
+        lastModified: stats.lastModified,
+      );
+    }
+    return null;
+  }
+
+  @override
   Future<String> parentUri(String uri) async {
     if (Uri.parse(uri).scheme == 'file') {
       return DefaultFileHandler().parentUri(uri);
@@ -212,6 +228,13 @@ class SafAndroidHandler implements FileHandler {
       name: newFile.fileName ?? path.basename(newFile.uri.toString()),
       isDir: await isDir(newFile.uri.toString()),
     );
+  }
+
+  Future<FileItem> getFileItem(String uri) async {
+    // TODO: Figure out how to make it not a future
+    final bool isUriDir = await isDir(uri);
+    final file = await _safUtil.stat(uri, isUriDir);
+    return FileItem(uri: uri, name: file!.name, isDir: isUriDir);
   }
 
   Future<bool> isDir(String uri) async {

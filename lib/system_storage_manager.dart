@@ -65,6 +65,13 @@ class SystemStorageManager {
   /// Checks whether file or folder exists
   Future<bool> exists(String uri) => _handler.exists(uri);
 
+  /// Gets stats of the passed file, returns null if item doesn't exists
+  ///
+  /// Returned values: [uri] path to file, [name] name of the file with extension,
+  /// [isDir] true if a directory, [size] file size in bytes, [lastModified] integer
+  /// of last modified time in milliseconds since epoch.
+  Future<FileItemStats?> stats(String uri) => _handler.stats(uri);
+
   /// Gets the parent directory of the passed uri string.
   ///
   /// On android a 'content://...' is expected, on other platforms a

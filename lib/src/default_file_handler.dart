@@ -124,6 +124,22 @@ class DefaultFileHandler implements FileHandler {
   }
 
   @override
+  Future<FileItemStats?> stats(String uri) async {
+    if (await exists(uri)) {
+      final stats = await _parseUriToFSE(uri).stat();
+
+      return FileItemStats(
+        uri: uri,
+        name: path.basename(uri),
+        isDir: isDir(uri),
+        size: stats.size,
+        lastModified: stats.modified.millisecondsSinceEpoch,
+      );
+    }
+    return null;
+  }
+
+  @override
   Future<String> parentUri(String uri) async {
     final dir = _parseUriToFSE(uri);
     final parent = path.dirname(dir.path);
@@ -133,8 +149,9 @@ class DefaultFileHandler implements FileHandler {
   @override
   Future<FileItem> copy(String fromUri, String toUri) async {
     final src = _parseUriToFSE(fromUri);
+    final dest = _parseUriToFSE(toUri) as Directory;
+
     if (isDir(fromUri)) {
-      final dest = _parseUriToFSE(toUri) as Directory;
       await dest.create(recursive: true);
       (src as Directory).list(recursive: false).map((item) async {
         if (item is Directory) {
@@ -152,10 +169,13 @@ class DefaultFileHandler implements FileHandler {
         isDir: true,
       );
     }
-    final dest = await (src as File).copy(toUri);
+
+    final newFilePath = await (src as File).copy(
+      path.join(dest.path, path.basename(src.path)),
+    );
     return FileItem(
-      uri: dest.uri.toString(),
-      name: dest.uri.pathSegments.last,
+      uri: newFilePath.uri.toString(),
+      name: newFilePath.uri.pathSegments.last,
       isDir: false,
     );
   }
@@ -211,6 +231,10 @@ class DefaultFileHandler implements FileHandler {
       name: path.basename(file.path),
       isDir: file is Directory,
     );
+  }
+
+  FileItem getFileItem(String uri) {
+    return FileItem(uri: uri, name: path.basename(uri), isDir: isDir(uri));
   }
 
   FileSystemEntity _parseUriToFSE(String uri) {

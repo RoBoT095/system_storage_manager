@@ -32,12 +32,16 @@ class FileManagerDemo extends StatefulWidget {
 
 class _FileManagerDemoState extends State<FileManagerDemo> {
   final manager = SystemStorageManager();
+
   late String defaultPath;
   String? selectedPath;
   String currentPath = '/';
   String? selectedFile;
+  String? selectedFolder;
   List<FileItem> files = [];
+
   bool isMoving = false;
+  bool isCopying = false;
   bool loading = true;
 
   @override
@@ -68,6 +72,7 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
         selectedPath = result.uri;
         selectedFile = null;
         isMoving = false;
+        isCopying = false;
       });
       await _listFiles();
     }
@@ -77,7 +82,7 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
     try {
       final file = await manager.pickFile();
       if (file != null) {
-        _copy(uri: file.uri);
+        _copy(file.uri, currentPath);
       }
     } catch (e) {
       debugPrint('Pick File Error: $e');
@@ -143,10 +148,12 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
     }
   }
 
-  Future<void> _copy({String? uri}) async {
+  Future<void> _copy(String fromUri, String toUri) async {
     try {
-      // TODO
+      await manager.copy(fromUri, toUri);
 
+      setState(() => isCopying = false);
+      selectedFile = null;
       _refresh();
     } catch (e) {
       debugPrint('Copy Error: $e');
@@ -159,6 +166,7 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
   Future<void> _move(String fromUri, String toUri) async {
     try {
       await manager.move(fromUri, toUri);
+
       setState(() => isMoving = false);
       selectedFile = null;
       _refresh();
@@ -268,8 +276,16 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
                               buttonWidth,
                             ),
                             _buildButtonCard(
-                              'Copy',
-                              selectedFile == null ? null : () => _copy(),
+                              isCopying ? 'Paste Here' : 'Copy/Duplicate',
+                              selectedFile == null
+                                  ? null
+                                  : () {
+                                      if (!isCopying) {
+                                        setState(() => isCopying = true);
+                                      } else {
+                                        _copy(selectedFile!, currentPath);
+                                      }
+                                    },
                               buttonWidth,
                             ),
                             _buildButtonCard(
@@ -325,9 +341,10 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
                         files: files,
                         deleteFile: _deleteFile,
                         listFiles: _listFiles,
-                        selectedFile: (file) => setState(() {
-                          selectedFile = file;
-                        }),
+                        selectedFile: (file) =>
+                            setState(() => selectedFile = file),
+                        selectedFolder: (folder) =>
+                            setState(() => selectedFolder = folder),
                       ),
                     ),
                   ),

@@ -25,7 +25,7 @@ abstract class FileHandler {
   Future<bool> delete(String uri);
 
   Future<bool> exists(String uri);
-  // Future<FileItemStats> stats(String uri);
+  Future<FileItemStats?> stats(String uri); // TODO: Test if it works
   Future<String> parentUri(String uri);
 
   Future<FileItem> copy(String fromUri, String toUri);
@@ -50,6 +50,7 @@ class FileItemStats {
   final String name;
   final bool isDir;
   final int size;
+  final int lastModified;
   // TODO: Add more stats
 
   FileItemStats({
@@ -57,5 +58,6 @@ class FileItemStats {
     required this.name,
     required this.isDir,
     required this.size,
+    required this.lastModified,
   });
 }
