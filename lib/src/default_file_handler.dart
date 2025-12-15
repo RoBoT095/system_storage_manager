@@ -65,7 +65,7 @@ class DefaultFileHandler implements FileHandler {
     return entities
         .where((e) {
           if (showHidden) return true;
-          return !e.uri.toFilePath().startsWith('.');
+          return !path.basename(e.uri.toFilePath()).startsWith('.');
         })
         .map(
           (e) => FileItem(

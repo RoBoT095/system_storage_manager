@@ -182,6 +182,7 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
     try {
       await manager.rename(uri, newName);
       selectedFile = null;
+      selectedFolder = null;
       _refresh();
     } catch (e) {
       debugPrint('Rename Error: $e');
@@ -303,14 +304,16 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
                             ),
                             _buildButtonCard(
                               'Rename',
-                              selectedFile == null
-                                  ? null
-                                  : () async => await _showTextDialog(
+                              selectedFile != null || selectedFolder != null
+                                  ? () async => await _showTextDialog(
                                       title: 'Rename',
                                       hint: 'Enter new name',
-                                      (newName) =>
-                                          _rename(selectedFile!, newName),
-                                    ),
+                                      (newName) => _rename(
+                                        selectedFile ?? selectedFolder ?? '',
+                                        newName,
+                                      ),
+                                    )
+                                  : null,
                               buttonWidth,
                             ),
                           ],
@@ -416,6 +419,8 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
             Text(currentPath),
             _textHeader('Selected File:'),
             Text('$selectedFile'),
+            _textHeader('Selected Folder:'),
+            Text('$selectedFolder'),
           ],
         ),
         actions: [
