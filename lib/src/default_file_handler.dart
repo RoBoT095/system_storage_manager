@@ -5,6 +5,25 @@ import 'package:file_picker/file_picker.dart';
 
 import 'platform_interface.dart';
 
+// Notes, for basic actions, the functions that work here are:
+// - pickDir
+// - pickFile
+// - pickFiles
+// - listFiles
+// - create
+// - rename
+// - delete
+// - exists
+// - parentUri
+// - move
+//
+// Needs more testing:
+// - copy (with folders)
+// - stats (needs to be finished)
+// - read and write (add checks to make sure it isn't a folder)
+//
+// Still require more work to add error handling and safety checks
+
 class DefaultFileHandler implements FileHandler {
   @override
   Future<FileItem?> pickDir({
@@ -79,11 +98,13 @@ class DefaultFileHandler implements FileHandler {
 
   @override
   Future<FileItem> create(String uri, String name, {bool isDir = false}) async {
+    // Does create need passed in bool for creating recursively?
     FileSystemEntity item;
+    if (isDir == false) isDir = name.endsWith('/');
     if (isDir) {
-      item = Directory('${Uri.parse(uri).toFilePath()}/$name');
+      item = Directory('${Uri.parse(uri).toFilePath()}$name');
     } else {
-      item = File('${Uri.parse(uri).toFilePath()}/$name');
+      item = File('${Uri.parse(uri).toFilePath()}$name');
     }
     if (isDir) {
       (item as Directory).create();
@@ -148,6 +169,9 @@ class DefaultFileHandler implements FileHandler {
 
   @override
   Future<FileItem> copy(String fromUri, String toUri) async {
+    // TODO: Add logic to parse parent uri and check if it is the same as toUri
+    // then parse out name of file/folder from fromUri and append '(num)' to name
+    // for each copy, careful with extensions and trailing slashes
     final src = _parseUriToFSE(fromUri);
     final dest = _parseUriToFSE(toUri) as Directory;
 

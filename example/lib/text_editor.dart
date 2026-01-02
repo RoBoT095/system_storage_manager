@@ -15,7 +15,6 @@ class _TextEditorState extends State<TextEditor> {
   final manager = SystemStorageManager();
   final textController = TextEditingController();
   final undoController = UndoHistoryController();
-  String content = '';
   bool editMode = false;
 
   @override
@@ -27,7 +26,6 @@ class _TextEditorState extends State<TextEditor> {
   Future<void> _loadFile() async {
     final fileContent = await manager.readAsString(widget.fileUri);
     setState(() {
-      content = fileContent;
       textController.text = fileContent;
     });
   }
@@ -64,7 +62,7 @@ class _TextEditorState extends State<TextEditor> {
                   style: TextStyle(fontSize: 16),
                   decoration: InputDecoration(border: InputBorder.none),
                 )
-              : Text(content, style: TextStyle(fontSize: 16)),
+              : Text(textController.text, style: TextStyle(fontSize: 16)),
         ),
       ),
     );

@@ -78,6 +78,20 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
     }
   }
 
+  Future<void> _importDir() async {
+    try {
+      final dir = await manager.pickDir();
+      if (dir != null) {
+        // TODO
+      }
+    } catch (e) {
+      debugPrint('Pick Dir Error: $e');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Pick Dir Error: $e')));
+    }
+  }
+
   Future<void> _pickFile() async {
     try {
       final file = await manager.pickFile();
@@ -96,7 +110,7 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
     try {
       final fileList = await manager.pickFiles();
       if (fileList != null) {
-        // TODO
+        fileList.map((file) => _copy(file.uri, currentPath)).toList();
       }
     } catch (e) {
       debugPrint('Pick Multi Files Error: $e');
@@ -136,7 +150,7 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
     }
   }
 
-  Future<void> _deleteFile(String uri) async {
+  Future<void> _delete(String uri) async {
     try {
       await manager.delete(uri);
       _refresh();
@@ -342,7 +356,7 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
                       ),
                       body: FileListView(
                         files: files,
-                        deleteFile: _deleteFile,
+                        deleteFile: _delete,
                         listFiles: _listFiles,
                         selectedFile: (file) =>
                             setState(() => selectedFile = file),
