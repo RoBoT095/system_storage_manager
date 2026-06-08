@@ -260,11 +260,13 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
                     builder: (context, constraints) {
                       final screenWidth = MediaQuery.sizeOf(context).width;
                       final maxWidth = constraints.maxWidth;
-                      final double buttonWidth = screenWidth > 650
-                          ? (maxWidth / 3 - 16)
-                          : screenWidth > 320
-                          ? (maxWidth / 2 - 16)
-                          : (maxWidth / 1 - 16);
+                      final double buttonWidth =
+                          (screenWidth > 650
+                                  ? (maxWidth / 3 - 16)
+                                  : screenWidth > 320
+                                  ? (maxWidth / 2 - 16)
+                                  : (maxWidth - 16))
+                              .clamp(0.0, double.infinity);
 
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8),

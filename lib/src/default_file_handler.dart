@@ -31,7 +31,7 @@ class DefaultFileHandler implements FileHandler {
     bool? writePermission,
     bool? persistablePermission,
   }) async {
-    String? result = await FilePicker.platform.getDirectoryPath(
+    String? result = await FilePicker.getDirectoryPath(
       initialDirectory: initUri != null
           ? Uri.parse(initUri).toFilePath()
           : null,
@@ -48,7 +48,7 @@ class DefaultFileHandler implements FileHandler {
 
   @override
   Future<FileItem?> pickFile({List<String>? allowedExtensions}) async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
+    FilePickerResult? result = await FilePicker.pickFiles(
       allowedExtensions: allowedExtensions,
       allowMultiple: false,
     );
@@ -61,7 +61,7 @@ class DefaultFileHandler implements FileHandler {
 
   @override
   Future<List<FileItem>?> pickFiles({List<String>? allowedExtensions}) async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
+    FilePickerResult? result = await FilePicker.pickFiles(
       allowedExtensions: allowedExtensions,
       allowMultiple: true,
     );

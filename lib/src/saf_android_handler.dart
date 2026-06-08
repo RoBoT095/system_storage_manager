@@ -42,7 +42,7 @@ class SafAndroidHandler implements FileHandler {
     String? initUri,
     List<String>? allowedExtensions,
   }) async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
+    FilePickerResult? result = await FilePicker.pickFiles(
       allowedExtensions: allowedExtensions,
       allowMultiple: false,
     );
@@ -59,7 +59,7 @@ class SafAndroidHandler implements FileHandler {
 
   @override
   Future<List<FileItem>?> pickFiles({List<String>? allowedExtensions}) async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
+    FilePickerResult? result = await FilePicker.pickFiles(
       allowedExtensions: allowedExtensions,
       allowMultiple: true,
     );
