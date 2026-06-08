@@ -25,7 +25,7 @@ abstract class FileHandler {
   Future<bool> delete(String uri);
 
   Future<bool> exists(String uri);
-  Future<FileItemStats?> stats(String uri); // TODO: Test if it works
+  Future<FileItemStats?> stats(String uri);
   Future<String> parentUri(String uri);
 
   Future<FileItem> copy(String fromUri, String toUri);
@@ -60,4 +60,20 @@ class FileItemStats {
     required this.size,
     required this.lastModified,
   });
+
+  @override
+  String toString() {
+    final lastModifiedDate = DateTime.fromMillisecondsSinceEpoch(lastModified);
+    final sizeFormatted = isDir ? '-' : _formatSize(size);
+    return '[name: $name, uri: $uri, isDir: $isDir, size: $sizeFormatted, lastModified: $lastModifiedDate]';
+  }
+
+  String _formatSize(int bytes) {
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    if (bytes < 1024 * 1024 * 1024) {
+      return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+    }
+    return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
+  }
 }

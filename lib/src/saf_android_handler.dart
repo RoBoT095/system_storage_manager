@@ -10,6 +10,12 @@ import 'package:system_storage_manager/src/default_file_handler.dart';
 
 import 'platform_interface.dart';
 
+// Notes, for basic actions, the functions that work here are:
+//
+// TODO
+//
+// Still require more work to add error handling and safety checks
+
 class SafAndroidHandler implements FileHandler {
   final _safStream = SafStream();
   final _safUtil = SafUtil();
@@ -131,14 +137,22 @@ class SafAndroidHandler implements FileHandler {
 
   @override
   Future<FileItemStats?> stats(String uri) async {
-    // TODO
     final stats = await _safUtil.stat(uri, await isDir(uri));
     if (stats != null) {
+      int size = 0;
+      if (!stats.isDir) {
+        try {
+          final bytes = await readAsBytes(uri);
+          size = bytes.length;
+        } catch (_) {
+          // If reading fails (e.g. permission denied), leave size as 0.
+        }
+      }
       return FileItemStats(
         uri: uri,
         name: stats.name,
         isDir: stats.isDir,
-        size: 0, //FIXME
+        size: size,
         lastModified: stats.lastModified,
       );
     }
@@ -241,13 +255,12 @@ class SafAndroidHandler implements FileHandler {
     if (Uri.parse(uri).scheme == 'file') {
       return DefaultFileHandler().isDir(uri);
     }
-
     try {
-      // Check if listing succeeds, if so, it's a directory
-      await _safUtil.list(uri);
-      return true;
+      final fileStat = await _safUtil.stat(uri, false);
+      if (fileStat != null) return fileStat.isDir;
+      final dirStat = await _safUtil.stat(uri, true);
+      return dirStat?.isDir ?? false;
     } catch (e) {
-      // If failed, probably a file
       return false;
     }
   }

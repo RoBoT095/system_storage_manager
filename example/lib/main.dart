@@ -206,6 +206,18 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
     }
   }
 
+  Future<FileItemStats?> _stats(String uri) async {
+    try {
+      return await manager.stats(uri);
+    } catch (e) {
+      debugPrint('Error getting stats: $e');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error getting stats: $e')));
+    }
+    return null;
+  }
+
   Future<void> _openFile() async {
     await Navigator.push(
       context,
@@ -327,6 +339,18 @@ class _FileManagerDemoState extends State<FileManagerDemo> {
                                         newName,
                                       ),
                                     )
+                                  : null,
+                              buttonWidth,
+                            ),
+                            _buildButtonCard(
+                              'Stats to console',
+                              selectedFile != null || selectedFolder != null
+                                  ? () async {
+                                      final itemStats = await _stats(
+                                        selectedFile ?? selectedFolder ?? '',
+                                      );
+                                      debugPrint(itemStats.toString());
+                                    }
                                   : null,
                               buttonWidth,
                             ),

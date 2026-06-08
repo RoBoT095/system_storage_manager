@@ -16,10 +16,10 @@ import 'platform_interface.dart';
 // - exists
 // - parentUri
 // - move
+// - stats
 //
 // Needs more testing:
 // - copy (with folders)
-// - stats (needs to be finished)
 // - read and write (add checks to make sure it isn't a folder)
 //
 // Still require more work to add error handling and safety checks
@@ -135,23 +135,19 @@ class DefaultFileHandler implements FileHandler {
 
   @override
   Future<bool> exists(String uri) async {
-    final FileSystemEntity file;
-    if (isDir(uri)) {
-      file = _parseUriToFSE(uri);
-    } else {
-      file = _parseUriToFSE(uri);
-    }
-    return await file.exists();
+    return await _parseUriToFSE(uri).exists();
   }
 
   @override
   Future<FileItemStats?> stats(String uri) async {
     if (await exists(uri)) {
-      final stats = await _parseUriToFSE(uri).stat();
+      final fse = _parseUriToFSE(uri);
+      final stats = await fse.stat();
+      final filePath = Uri.parse(uri).toFilePath();
 
       return FileItemStats(
         uri: uri,
-        name: path.basename(uri),
+        name: path.basename(filePath),
         isDir: isDir(uri),
         size: stats.size,
         lastModified: stats.modified.millisecondsSinceEpoch,

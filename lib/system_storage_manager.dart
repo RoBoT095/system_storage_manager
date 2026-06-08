@@ -1,7 +1,7 @@
 /// Library exports all the classes and functions of the SSM package.
 library;
 
-export 'src/platform_interface.dart' show FileHandler, FileItem;
+export 'src/platform_interface.dart' show FileHandler, FileItem, FileItemStats;
 import 'src/platform_interface.dart';
 
 class SystemStorageManager {
